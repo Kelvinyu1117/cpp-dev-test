@@ -1,0 +1,22 @@
+namespace Property;
+
+enum PropType : byte {
+  INT = 0,
+  FLOAT = 1,
+  DOUBLE = 2,
+  BOOL = 3,
+  STRING = 4,
+}
+
+table Prop {
+  type: PropType;
+  name: string;
+  value: string;
+  sub_properties: [Prop];
+}
+
+table PropTree {
+  properties: [Prop];
+}
+
+root_type PropTree;
