@@ -21,22 +21,22 @@ struct PropBuilder;
 struct PropTree;
 struct PropTreeBuilder;
 
+inline const ::flatbuffers::TypeTable *PropTypeTable();
+
+inline const ::flatbuffers::TypeTable *PropTreeTypeTable();
+
 enum PropType : int8_t {
   PropType_INT = 0,
-  PropType_FLOAT = 1,
   PropType_DOUBLE = 2,
-  PropType_BOOL = 3,
   PropType_STRING = 4,
   PropType_MIN = PropType_INT,
   PropType_MAX = PropType_STRING
 };
 
-inline const PropType (&EnumValuesPropType())[5] {
+inline const PropType (&EnumValuesPropType())[3] {
   static const PropType values[] = {
     PropType_INT,
-    PropType_FLOAT,
     PropType_DOUBLE,
-    PropType_BOOL,
     PropType_STRING
   };
   return values;
@@ -45,9 +45,9 @@ inline const PropType (&EnumValuesPropType())[5] {
 inline const char * const *EnumNamesPropType() {
   static const char * const names[6] = {
     "INT",
-    "FLOAT",
+    "",
     "DOUBLE",
-    "BOOL",
+    "",
     "STRING",
     nullptr
   };
@@ -62,6 +62,9 @@ inline const char *EnumNamePropType(PropType e) {
 
 struct Prop FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
   typedef PropBuilder Builder;
+  static const ::flatbuffers::TypeTable *MiniReflectTypeTable() {
+    return PropTypeTable();
+  }
   enum FlatBuffersVTableOffset FLATBUFFERS_VTABLE_UNDERLYING_TYPE {
     VT_TYPE = 4,
     VT_NAME = 6,
@@ -71,14 +74,26 @@ struct Prop FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
   Property::PropType type() const {
     return static_cast<Property::PropType>(GetField<int8_t>(VT_TYPE, 0));
   }
+  bool mutate_type(Property::PropType _type = static_cast<Property::PropType>(0)) {
+    return SetField<int8_t>(VT_TYPE, static_cast<int8_t>(_type), 0);
+  }
   const ::flatbuffers::String *name() const {
     return GetPointer<const ::flatbuffers::String *>(VT_NAME);
+  }
+  ::flatbuffers::String *mutable_name() {
+    return GetPointer<::flatbuffers::String *>(VT_NAME);
   }
   const ::flatbuffers::String *value() const {
     return GetPointer<const ::flatbuffers::String *>(VT_VALUE);
   }
+  ::flatbuffers::String *mutable_value() {
+    return GetPointer<::flatbuffers::String *>(VT_VALUE);
+  }
   const ::flatbuffers::Vector<::flatbuffers::Offset<Property::Prop>> *sub_properties() const {
     return GetPointer<const ::flatbuffers::Vector<::flatbuffers::Offset<Property::Prop>> *>(VT_SUB_PROPERTIES);
+  }
+  ::flatbuffers::Vector<::flatbuffers::Offset<Property::Prop>> *mutable_sub_properties() {
+    return GetPointer<::flatbuffers::Vector<::flatbuffers::Offset<Property::Prop>> *>(VT_SUB_PROPERTIES);
   }
   bool Verify(::flatbuffers::Verifier &verifier) const {
     return VerifyTableStart(verifier) &&
@@ -154,11 +169,17 @@ inline ::flatbuffers::Offset<Prop> CreatePropDirect(
 
 struct PropTree FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
   typedef PropTreeBuilder Builder;
+  static const ::flatbuffers::TypeTable *MiniReflectTypeTable() {
+    return PropTreeTypeTable();
+  }
   enum FlatBuffersVTableOffset FLATBUFFERS_VTABLE_UNDERLYING_TYPE {
     VT_PROPERTIES = 4
   };
   const ::flatbuffers::Vector<::flatbuffers::Offset<Property::Prop>> *properties() const {
     return GetPointer<const ::flatbuffers::Vector<::flatbuffers::Offset<Property::Prop>> *>(VT_PROPERTIES);
+  }
+  ::flatbuffers::Vector<::flatbuffers::Offset<Property::Prop>> *mutable_properties() {
+    return GetPointer<::flatbuffers::Vector<::flatbuffers::Offset<Property::Prop>> *>(VT_PROPERTIES);
   }
   bool Verify(::flatbuffers::Verifier &verifier) const {
     return VerifyTableStart(verifier) &&
@@ -204,12 +225,80 @@ inline ::flatbuffers::Offset<PropTree> CreatePropTreeDirect(
       properties__);
 }
 
+inline const ::flatbuffers::TypeTable *PropTypeTypeTable() {
+  static const ::flatbuffers::TypeCode type_codes[] = {
+    { ::flatbuffers::ET_CHAR, 0, 0 },
+    { ::flatbuffers::ET_CHAR, 0, 0 },
+    { ::flatbuffers::ET_CHAR, 0, 0 }
+  };
+  static const ::flatbuffers::TypeFunction type_refs[] = {
+    Property::PropTypeTypeTable
+  };
+  static const int64_t values[] = { 0, 2, 4 };
+  static const char * const names[] = {
+    "INT",
+    "DOUBLE",
+    "STRING"
+  };
+  static const ::flatbuffers::TypeTable tt = {
+    ::flatbuffers::ST_ENUM, 3, type_codes, type_refs, nullptr, values, names
+  };
+  return &tt;
+}
+
+inline const ::flatbuffers::TypeTable *PropTypeTable() {
+  static const ::flatbuffers::TypeCode type_codes[] = {
+    { ::flatbuffers::ET_CHAR, 0, 0 },
+    { ::flatbuffers::ET_STRING, 0, -1 },
+    { ::flatbuffers::ET_STRING, 0, -1 },
+    { ::flatbuffers::ET_SEQUENCE, 1, 1 }
+  };
+  static const ::flatbuffers::TypeFunction type_refs[] = {
+    Property::PropTypeTypeTable,
+    Property::PropTypeTable
+  };
+  static const char * const names[] = {
+    "type",
+    "name",
+    "value",
+    "sub_properties"
+  };
+  static const ::flatbuffers::TypeTable tt = {
+    ::flatbuffers::ST_TABLE, 4, type_codes, type_refs, nullptr, nullptr, names
+  };
+  return &tt;
+}
+
+inline const ::flatbuffers::TypeTable *PropTreeTypeTable() {
+  static const ::flatbuffers::TypeCode type_codes[] = {
+    { ::flatbuffers::ET_SEQUENCE, 1, 0 }
+  };
+  static const ::flatbuffers::TypeFunction type_refs[] = {
+    Property::PropTypeTable
+  };
+  static const char * const names[] = {
+    "properties"
+  };
+  static const ::flatbuffers::TypeTable tt = {
+    ::flatbuffers::ST_TABLE, 1, type_codes, type_refs, nullptr, nullptr, names
+  };
+  return &tt;
+}
+
 inline const Property::PropTree *GetPropTree(const void *buf) {
   return ::flatbuffers::GetRoot<Property::PropTree>(buf);
 }
 
 inline const Property::PropTree *GetSizePrefixedPropTree(const void *buf) {
   return ::flatbuffers::GetSizePrefixedRoot<Property::PropTree>(buf);
+}
+
+inline PropTree *GetMutablePropTree(void *buf) {
+  return ::flatbuffers::GetMutableRoot<PropTree>(buf);
+}
+
+inline Property::PropTree *GetMutableSizePrefixedPropTree(void *buf) {
+  return ::flatbuffers::GetMutableSizePrefixedRoot<Property::PropTree>(buf);
 }
 
 inline bool VerifyPropTreeBuffer(

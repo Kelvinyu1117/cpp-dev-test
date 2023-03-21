@@ -13,3 +13,5 @@ target_link_libraries(
     PUBLIC asio
     PUBLIC flatbuffers
 )
+
+install(TARGETS TCPClient)

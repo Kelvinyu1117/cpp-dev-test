@@ -2,9 +2,7 @@ namespace Property;
 
 enum PropType : byte {
   INT = 0,
-  FLOAT = 1,
   DOUBLE = 2,
-  BOOL = 3,
   STRING = 4,
 }
 
